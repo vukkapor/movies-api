@@ -13,6 +13,12 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware('api')->get('/movies', 'MovieController@index');
+
+Route::middleware('api')->post('/movies', 'MovieController@store');
+
+Route::middleware('api')->get('/movies/{id}', 'MovieController@show');
+
+Route::middleware('api')->put('/movies/{id}', 'MovieController@update');
+
+Route::middleware('api')->delete('/movies/{id}', 'MovieController@destroy');
