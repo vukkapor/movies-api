@@ -36,6 +36,11 @@ class MovieController extends Controller
     public function store(Request $request)
     {
         $movie = new Movie();
+        \Log::info($request);
+        $request->duration = intval($request->duration);
+        \Log::info($request);
+
+        $this->validate(request(), Movie::STORE_RULES);
 
         $movie->title = $request->input('title');
         $movie->director = $request->input('director');
@@ -81,11 +86,12 @@ class MovieController extends Controller
     public function update(Request $request, $id)
     {
         $movie = Movie::findOrFail($id);
+        $this->validate(request(), Movie::STORE_RULES);
 
         $movie->title = $request->input('title');
         $movie->director = $request->input('director');
         $movie->imageUrl = $request->input('imageUrl');
-        $movie->duration = $request->input('duration');
+        $movie->duration = intval($request->input('duration'));
         $movie->releaseDate = $request->input('releaseDate');
         $movie->genre = $request->input('genre');
 
