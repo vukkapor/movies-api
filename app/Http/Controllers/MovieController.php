@@ -12,9 +12,26 @@ class MovieController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Movie::all();
+        if(!$request->input('take') && !$request->input('skip') && !$request->input('title')){
+            return Movie::all();
+        }else{
+            $movies = Movie::all();
+        }
+
+        if($request->input('title')){
+            $movies = $this->search($request->input('title'));
+        }
+        if($request->input('skip')){
+            $movies = $this->skip($request->input('skip'), $movies);
+        }
+        if($request->input('take')){
+            $movies = $this->take($request->input('take'), $movies);
+        }
+
+
+        return $movies;
     }
 
     /**
@@ -27,6 +44,51 @@ class MovieController extends Controller
         //
     }
 
+    public function search($title)
+    {
+        $movies = Movie::where('title', 'LIKE', '%'.$title.'%')->get();
+
+        return $movies;
+    }
+
+    public function take($number, $movies)
+    {
+        \Log::info($movies);
+        $newMovie = [];
+        for($i = 0; $i < $number; $i++){
+            array_push($newMovie, $movies[$i]);
+        }
+
+        return $newMovie;
+    }
+
+    public function skip($number, $movies)
+    {
+
+        $newMovie = [];
+        // \Log::info($movies);
+        // $newMovie = array_slice($movies, $number);
+        for($i = $number-1; $i < $movies->count(); $i++){
+            array_push($newMovie, $movies[$i]);
+        }
+
+
+        return $newMovie;
+    }
+
+    public function checkIfExists($title, $date)
+    {
+        if(Movie::where('title', $title)->first()){
+            if(Movie::where('releaseDate', $date)->first())
+            {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -36,9 +98,11 @@ class MovieController extends Controller
     public function store(Request $request)
     {
         $movie = new Movie();
-        \Log::info($request);
         $request->duration = intval($request->duration);
-        \Log::info($request);
+        if($this->checkIfExists($request->input('title'), $request->input('releaseDate'))){
+            print_r('Postoji film sa tim imenom i isti datum');
+            return;
+        }
 
         $this->validate(request(), Movie::STORE_RULES);
 
